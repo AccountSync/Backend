@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "http/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/home",
+      "dest": "http/index.html"
+    },
+    {
+      "src": "/success",
+      "dest": "http/success.html"
+    },
+    {
+      "src": "/sex",
+      "dest": "http/oo.html"
+    },
+    {
+      "src": "/((?!.*\\.\\w+$).*)",
+      "dest": "public/src/index.js"
+    }, 
+    {
+      "src": "/(.+\\.[a-z]+)$",
+      "dest": "http/$1"
+    }
+  ]
+}

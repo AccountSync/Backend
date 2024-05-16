@@ -56,7 +56,11 @@ app.post('/verify', jsonParser, async (req, res) => {
 			}
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
 
-			const dbUser = await createUser(user.id, user.email)
+			try {
+				const dbUser = await createUser(user.id, user.email)
+			} catch(error) {
+				console.error('user already exists!')
+			}
 
 			return res.end(token);
 		} catch (error) {

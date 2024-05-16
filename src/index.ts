@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 import { request } from 'undici'
 import { URLSearchParams } from 'url'
 import { verifyToken } from './util'
-import { createUser, updateFriends } from './database'
+import { createUser, updateFriends, prisma } from './database'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -18,8 +18,12 @@ const jsonParser = bodyParser.json()
 
 app.use(cors())
 
-app.get('/', async ({ query }, response) => {
-	const { code } = query;
+app.get('/', (req, res) => {
+    return res.redirect('/home');
+});
+
+app.post('/verify', jsonParser, async (req, res) => {
+	const code = req.body.code;
 
 	if (code) {
 		try {
@@ -47,32 +51,26 @@ app.get('/', async ({ query }, response) => {
             });
 
             const user: any = await userResult.body.json();
-			if(user.id == null) {
-				response.send(`something wrong lil bro`)
+			if(!user.id) {
+				res.end('error');
 			}
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string);
 
 			const dbUser = await createUser(user.id, user.email)
 
-			response.set({'Authorization': token});
-			return response.redirect(`/success?token=${token}&email=${user.email}`);
+			return res.end(token);
 		} catch (error) {
 			console.error(error);
-			return response.send('Error! Failed to verify user. (your account might already exist)');
+			return res.end('error');
 		}
-	} else {
-        return response.redirect('/home')
-    }
-});
-
-app.get('/verify', (req, res) => {
-    return res.redirect(config.oauth2URL); // You need identify+email scopes
+	}
+	res.end('error');
 })
 
 app.post('/sync', jsonParser, (req, res) => {
 	const token = req.headers.authorization;
 
-	verifyToken(token, (err: any, decoded: any) => {
+	verifyToken(token, async (err: any, decoded: any) => {
 		if(err) {
 			return res.end('Invalid token!');
 		} else {
@@ -80,8 +78,8 @@ app.post('/sync', jsonParser, (req, res) => {
 			const friends = req.body.friends;
 
 			console.log(friends)
-			updateFriends(id, friends)
-			return res.end('Success!');
+			const user = await updateFriends(id, friends)
+			return res.end(`Success! ${user.email}`);
 		}
 	})
 })

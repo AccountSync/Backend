@@ -1,4 +1,3 @@
 {
-    "homeURL": "https://accountsync.vercel.app",
-    "oauth2URL": "https://discord.com/oauth2/authorize?client_id=1228027727878295724&response_type=code&redirect_uri=https%3A%2F%2Faccountsync.vercel.app&scope=identify+email"
+    "homeURL": "https://accountsync.vercel.app/"
 }
